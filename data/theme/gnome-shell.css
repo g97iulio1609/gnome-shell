@@ -604,6 +604,9 @@
   background: #303030;
   border: 3px solid white; }
 
+.dash-item-container > StWidget {
+    padding: 4px 8px; }
+
 .keyboard-key:active {
   background: #808080; }
 
