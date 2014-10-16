@@ -1399,6 +1399,9 @@ StScrollBar {
     width: 24px;
     height: 24px; }
 
+.dash-item-container > StWidget {
+  padding: 4px 8px; }
+
 .dash-label {
   border-radius: 7px;
   padding: 4px 12px;

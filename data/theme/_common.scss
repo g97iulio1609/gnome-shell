@@ -492,7 +492,11 @@ StScrollBar {
     }
     
   }
-  
+
+  .dash-item-container > StWidget {
+    padding: 4px 8px;
+  }
+
   .dash-label { //osd tooltip
     border-radius: 7px;
     padding: 4px 12px;
