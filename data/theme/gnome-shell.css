@@ -1471,6 +1471,13 @@ StScrollBar {
   border-image: none;
   background-image: none; }
 
+.app-well-app.app-folder:focus > .overview-icon,
+.app-well-app.app-folder:hover > .overview-icon {
+  background-color: rgba(238, 238, 236, 0.1);
+  transition-duration: 200ms;
+  border-image: none;
+  background-image: none; }
+
 .app-well-app-running-dot {
   width: 10px;
   height: 3px;
