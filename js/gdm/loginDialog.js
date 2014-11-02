@@ -537,24 +537,24 @@ const LoginDialog = new Lang.Class({
         }
     },
 
-    _updateLogoTexture: function(cache, file) {
-        if (this._logoFile && !this._logoFile.equal(file))
+    _updateLogoTexture: function(cache, uri) {
+        if (this._logoFileUri != uri)
             return;
 
         this._logoBin.destroy_all_children();
-        if (this._logoFile) {
+        if (this._logoFileUri) {
             let scaleFactor = St.ThemeContext.get_for_stage(global.stage).scale_factor;
-            this._logoBin.add_child(this._textureCache.load_file_async(this._logoFile,
-                                                                       -1, _LOGO_ICON_HEIGHT,
-                                                                       scaleFactor));
+            this._logoBin.add_child(this._textureCache.load_uri_async(this._logoFileUri,
+                                                                      -1, _LOGO_ICON_HEIGHT,
+                                                                      scaleFactor));
         }
     },
 
     _updateLogo: function() {
         let path = this._settings.get_string(GdmUtil.LOGO_KEY);
 
-        this._logoFile = path ? Gio.file_new_for_path(path) : null;
-        this._updateLogoTexture(this._textureCache, this._logoFile);
+        this._logoFileUri = path ? Gio.file_new_for_path(path).get_uri() : null;
+        this._updateLogoTexture(this._textureCache, this._logoFileUri);
     },
 
     _onPrompted: function() {

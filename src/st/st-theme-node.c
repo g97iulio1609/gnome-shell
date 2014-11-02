@@ -158,10 +158,7 @@ st_theme_node_finalize (GObject *object)
     }
 
   if (node->background_image)
-    {
-      g_object_unref (node->background_image);
-      node->background_image = NULL;
-    }
+    g_free (node->background_image);
 
   if (node->background_texture != COGL_INVALID_HANDLE)
     cogl_handle_unref (node->background_texture);
@@ -908,7 +905,7 @@ st_theme_node_get_double (StThemeNode *node,
  *   parent's parent, and so forth. Note that if the property has a
  *   value of 'inherit' it will be inherited even if %FALSE is passed
  *   in for @inherit; this only affects the default behavior for inheritance.
- * @file: (out) (transfer full): location to store the newly allocated value that was
+ * @value: (out): location to store the newly allocated value that was
  *   determined. If the property is not found, the value in this location
  *   will not be changed.
  *
@@ -923,7 +920,7 @@ gboolean
 st_theme_node_lookup_url (StThemeNode  *node,
                           const char   *property_name,
                           gboolean      inherit,
-                          GFile       **file)
+                          char        **value)
 {
   gboolean result = FALSE;
   int i;
@@ -938,6 +935,7 @@ st_theme_node_lookup_url (StThemeNode  *node,
         {
           CRTerm *term = decl->value;
           CRStyleSheet *base_stylesheet;
+          GFile *file;
 
           if (term->type != TERM_URI && term->type != TERM_STRING)
             continue;
@@ -947,21 +945,23 @@ st_theme_node_lookup_url (StThemeNode  *node,
           else
             base_stylesheet = NULL;
 
-          *file = _st_theme_resolve_url (node->theme,
-                                         base_stylesheet,
-                                         decl->value->content.str->stryng->str);
+          file = _st_theme_resolve_url (node->theme,
+                                        base_stylesheet,
+                                        decl->value->content.str->stryng->str);
+          *value = g_file_get_path (file);
+          g_object_unref (file);
           result = TRUE;
           break;
         }
     }
 
   if (!result && inherit && node->parent_node)
-    result = st_theme_node_lookup_url (node->parent_node, property_name, inherit, file);
+    result = st_theme_node_lookup_url (node->parent_node, property_name, inherit, value);
 
   return result;
 }
 
-/**
+/*
  * st_theme_node_get_url:
  * @node: a #StThemeNode
  * @property_name: The name of the string property
@@ -972,18 +972,18 @@ st_theme_node_lookup_url (StThemeNode  *node,
  * and lets you handle the case where the theme does not specify the
  * indicated value.
  *
- * Returns: (transfer full): the newly allocated value if found.
+ * Return value: the newly allocated value if found.
  *  If @property_name is not found, a warning will be logged and %NULL
  *  will be returned.
  */
-GFile *
+char *
 st_theme_node_get_url (StThemeNode *node,
                        const char  *property_name)
 {
-  GFile *file;
+  char *value;
 
-  if (st_theme_node_lookup_url (node, property_name, FALSE, &file))
-    return file;
+  if (st_theme_node_lookup_url (node, property_name, FALSE, &value))
+    return value;
   else
     {
       g_warning ("Did not find string property '%s'", property_name);
@@ -1926,7 +1926,8 @@ _st_theme_node_ensure_background (StThemeNode *node)
           CRTerm *term;
           /* background: property sets all terms to specified or default values */
           node->background_color = TRANSPARENT_COLOR;
-          g_clear_object (&node->background_image);
+          g_free (node->background_image);
+          node->background_image = NULL;
           node->background_position_set = FALSE;
           node->background_size = ST_BACKGROUND_SIZE_AUTO;
 
@@ -1942,7 +1943,7 @@ _st_theme_node_ensure_background (StThemeNode *node)
                   if (node->parent_node)
                     {
                       st_theme_node_get_background_color (node->parent_node, &node->background_color);
-                      node->background_image = g_object_ref (st_theme_node_get_background_image (node->parent_node));
+                      node->background_image = g_strdup (st_theme_node_get_background_image (node->parent_node));
                     }
                 }
               else if (term_is_none (term))
@@ -1963,7 +1964,8 @@ _st_theme_node_ensure_background (StThemeNode *node)
                                                 base_stylesheet,
                                                 term->content.str->stryng->str);
 
-                  node->background_image = file;
+                  node->background_image = g_file_get_path (file);
+                  g_object_unref (file);
                 }
             }
         }
@@ -2060,25 +2062,30 @@ _st_theme_node_ensure_background (StThemeNode *node)
           if (decl->value->type == TERM_URI)
             {
               CRStyleSheet *base_stylesheet;
+              GFile *file;
 
               if (decl->parent_statement != NULL)
                 base_stylesheet = decl->parent_statement->parent_sheet;
               else
                 base_stylesheet = NULL;
 
-              g_clear_object (&node->background_image);
-              node->background_image = _st_theme_resolve_url (node->theme,
-                                                              base_stylesheet,
-                                                              decl->value->content.str->stryng->str);
+              g_free (node->background_image);
+              file = _st_theme_resolve_url (node->theme,
+                                            base_stylesheet,
+                                            decl->value->content.str->stryng->str);
+
+              node->background_image = g_file_get_path (file);
+              g_object_unref (file);
             }
           else if (term_is_inherit (decl->value))
             {
-              g_clear_object (&node->background_image);
-              node->background_image = g_object_ref (st_theme_node_get_background_image (node->parent_node));
+              g_free (node->background_image);
+              node->background_image = g_strdup (st_theme_node_get_background_image (node->parent_node));
             }
           else if (term_is_none (decl->value))
             {
-              g_clear_object (&node->background_image);
+              g_free (node->background_image);
+              node->background_image = NULL;
             }
         }
       else if (strcmp (property_name, "-gradient-direction") == 0)
@@ -2135,13 +2142,7 @@ st_theme_node_get_background_color (StThemeNode  *node,
   *color = node->background_color;
 }
 
-/**
- * st_theme_node_get_background_image:
- * @node: a #StThemeNode
- *
- * Returns: (transfer none): @node's background image.
- */
-GFile *
+const char *
 st_theme_node_get_background_image (StThemeNode *node)
 {
   g_return_val_if_fail (ST_IS_THEME_NODE (node), NULL);
@@ -2893,6 +2894,7 @@ st_theme_node_get_border_image (StThemeNode *node)
           int border_left;
 
           GFile *file;
+          char *filename;
 
           /* Support border-image: none; to suppress a previously specified border image */
           if (term_is_none (term))
@@ -2971,15 +2973,17 @@ st_theme_node_get_border_image (StThemeNode *node)
             base_stylesheet = NULL;
 
           file = _st_theme_resolve_url (node->theme, base_stylesheet, url);
+          filename = g_file_get_path (file);
+          g_object_unref (file);
 
-          if (file == NULL)
+          if (filename == NULL)
             goto next_property;
 
-          node->border_image = st_border_image_new (file,
+          node->border_image = st_border_image_new (filename,
                                                     border_top, border_right, border_bottom, border_left,
                                                     scale_factor);
 
-          g_object_unref (file);
+          g_free (filename);
 
           return node->border_image;
         }
@@ -3849,9 +3853,7 @@ st_theme_node_paint_equal (StThemeNode *node,
       !clutter_color_equal (&node->background_gradient_end, &other->background_gradient_end))
     return FALSE;
 
-  if ((node->background_image != NULL) &&
-      (other->background_image != NULL) &&
-      !g_file_equal (node->background_image, other->background_image))
+  if (g_strcmp0 (node->background_image, other->background_image) != 0)
     return FALSE;
 
   _st_theme_node_ensure_geometry (node);

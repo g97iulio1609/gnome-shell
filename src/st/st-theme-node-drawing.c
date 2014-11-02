@@ -600,7 +600,7 @@ create_cairo_pattern_of_background_image (StThemeNode *node,
   cairo_pattern_t *pattern;
   cairo_content_t  content;
   cairo_matrix_t   matrix;
-  GFile *file;
+  const char *file;
 
   StTextureCache *texture_cache;
 
@@ -1037,7 +1037,7 @@ st_theme_node_prerender_background (StThemeNode *node,
     }
   else
     {
-      GFile *background_image;
+      const char *background_image;
 
       background_image = st_theme_node_get_background_image (node);
 
@@ -1303,14 +1303,14 @@ st_theme_node_load_border_image (StThemeNode *node)
       if (border_image == NULL)
         goto out;
 
-      GFile *file;
-      file = st_border_image_get_file (border_image);
+      const char *filename;
+      filename = st_border_image_get_filename (border_image);
 
       int scale_factor;
       g_object_get (node->context, "scale-factor", &scale_factor, NULL);
 
       node->border_slices_texture = st_texture_cache_load_file_to_cogl_texture (st_texture_cache_get_default (),
-                                                                                file, scale_factor);
+                                                                                filename, scale_factor);
       if (node->border_slices_texture == COGL_INVALID_HANDLE)
         goto out;
 
@@ -1348,7 +1348,7 @@ st_theme_node_load_background_image (StThemeNode *node)
 {
   if (node->background_texture == COGL_INVALID_HANDLE)
     {
-      GFile *background_image;
+      const char *background_image;
       StShadow *background_image_shadow_spec;
 
       background_image = st_theme_node_get_background_image (node);

@@ -1,0 +1,25 @@
+From cc8424314ab4822db15cd269e8ec2291bb9eedb5 Mon Sep 17 00:00:00 2001
+From: Tim Lunn <tim@feathertop.org>
+Date: Wed, 17 Jul 2013 09:01:08 +1000
+Subject: [PATCH] Revert "bluetooth: Port to BlueZ 5"
+
+This reverts commit dd74ea99a70fb0c4615b448670a4a1d0b843eab4.
+
+Revert "configure: Bump gnome-bluetooth requirement"
+
+This reverts commit c7fb65c78e48ed6f687008684a25cceefafb3992.
+---
+ configure.ac |    2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+--- a/configure.ac
++++ b/configure.ac
+@@ -138,7 +138,7 @@ AS_IF([test x$enable_browser_plugin = xy
+ ])
+ AM_CONDITIONAL(BUILD_BROWSER_PLUGIN, test x$enable_browser_plugin = xyes)
+ 
+-PKG_CHECK_MODULES(BLUETOOTH, gnome-bluetooth-1.0 >= 3.9.0,
++PKG_CHECK_MODULES(BLUETOOTH, gnome-bluetooth-1.0 >= 3.1.0,
+         [AC_DEFINE([HAVE_BLUETOOTH],[1],[Define if you have libgnome-bluetooth-applet])
+ 	 AC_SUBST([HAVE_BLUETOOTH],[1])],
+ 	[AC_DEFINE([HAVE_BLUETOOTH],[0])

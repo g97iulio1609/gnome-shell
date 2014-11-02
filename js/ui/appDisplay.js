@@ -29,7 +29,7 @@ const Util = imports.misc.util;
 
 const MAX_APPLICATION_WORK_MILLIS = 75;
 const MENU_POPUP_TIMEOUT = 600;
-const MAX_COLUMNS = 6;
+const MAX_COLUMNS = 24;
 const MIN_COLUMNS = 4;
 const MIN_ROWS = 4;
 
@@ -379,7 +379,9 @@ const AllView = new Lang.Class({
         this.actor.add_actor(this._scrollView);
 
         this._scrollView.set_policy(Gtk.PolicyType.NEVER,
-                                    Gtk.PolicyType.EXTERNAL);
+                                    Gtk.PolicyType.AUTOMATIC);
+        // we are only using ScrollView for the fade effect, hide scrollbars
+        this._scrollView.vscroll.hide();
         this._adjustment = this._scrollView.vscroll.adjustment;
 
         this._pageIndicators = new PageIndicators();

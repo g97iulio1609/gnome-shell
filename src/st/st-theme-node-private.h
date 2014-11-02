@@ -68,7 +68,7 @@ struct _StThemeNode {
 
   int transition_duration;
 
-  GFile *background_image;
+  char *background_image;
   StBorderImage *border_image;
   StShadow *box_shadow;
   StShadow *background_image_shadow;

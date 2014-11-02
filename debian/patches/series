@@ -1,0 +1,9 @@
+revert_networkagent_VPN_hints.patch
+#10-make-NetworkManager-optional.patch
+27-nm-libexec-path.patch
+#30-remoteMenu-Prevent-the-shell-from-becoming-unrespons.patch
+41-handle-logind-fail.patch
+ubuntu-lightdm-user-switching.patch
+ubuntu_lock_on_suspend.patch
+revert_new_bluetooth.patch
+#revert_networkagent_VPN_hints.patch

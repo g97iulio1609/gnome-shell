@@ -40,6 +40,8 @@ const Magnifier = imports.ui.magnifier;
 const XdndHandler = imports.ui.xdndHandler;
 const Util = imports.misc.util;
 
+const DEFAULT_BACKGROUND_COLOR = Clutter.Color.from_pixel(0x2e3436ff);
+
 const A11Y_SCHEMA = 'org.gnome.desktop.a11y.keyboard';
 const STICKY_KEYS_ENABLE = 'stickykeys-enable';
 const GNOMESHELL_STARTED_MESSAGE_ID = 'f3ea493c22934e26811cd62abe8e203a';
@@ -128,9 +130,6 @@ function _initializeUI() {
     // be predictable anyways.
     Shell.WindowTracker.get_default();
     Shell.AppUsage.get_default();
-
-    let resource = Gio.Resource.load(global.datadir + '/gnome-shell-theme.gresource');
-    resource._register();
 
     _loadDefaultStylesheet();
 
@@ -225,26 +224,12 @@ function _initializeUI() {
     });
 }
 
-function _getDefaultStylesheet() {
-    let stylesheet;
-
-    stylesheet = Gio.File.new_for_uri('resource:///org/gnome/shell/theme/' + sessionMode.stylesheetName);
-    if (stylesheet.query_exists(null))
-        return stylesheet;
-
-    stylesheet = Gio.File.new_for_path(global.datadir + '/theme/' + sessionMode.stylesheetName);
-    if (stylesheet.query_exists(null))
-        return stylesheet;
-
-    return null;
-}
-
 function _loadDefaultStylesheet() {
     if (!sessionMode.isPrimary)
         return;
 
-    let stylesheet = _getDefaultStylesheet();
-    if (_defaultCssStylesheet && _defaultCssStylesheet.equal(stylesheet))
+    let stylesheet = global.datadir + '/theme/' + sessionMode.stylesheetName;
+    if (_defaultCssStylesheet == stylesheet)
         return;
 
     _defaultCssStylesheet = stylesheet;
@@ -271,7 +256,7 @@ function getThemeStylesheet() {
  * Set the theme CSS file that the shell will load
  */
 function setThemeStylesheet(cssStylesheet) {
-    _cssStylesheet = Gio.File.new_for_path(cssStylesheet);
+    _cssStylesheet = cssStylesheet;
 }
 
 /**
